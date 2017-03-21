@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>People</title>
+	<link rel="stylesheet" href="javascripts/bootstrap/dist/css/bootstrap.min.css">
+	<script type="text/javascript" src="javascripts/jquery/dist/jquery.min.js"></script>
+	<script type="text/javascript" src="javascripts/vue/dist/vue.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.3/axios.js"></script>
+	<link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
+</head>
+
+<body>
+	<h1 class="header">People</h1>
+	<div class="container">
+		<h2 class="paragraph ">
+    	Client side Application for the TTP Spotify fellowship!
+    </h2>
+		<hr>
+		<div id="people">
+			<div id="app">
+				<table class="table">
+					<tbody>
+						<tr>
+							<th>id</th>
+							<th>Name</th>
+							<th>Favorite City</th>
+							<td></td>
+						</tr>
+						<tr v-for="user in users">
+							<td> {{ user._id }} </td>
+							<td> {{ user.name }} </td>
+							<td> {{ user.favoriteCity }} </td>
+							<td>
+								<button class="btn btn-xs btn-warning" v-on:click="setEditUser(user)">~</button>
+								<button class="btn btn-xs btn-danger" v-on:click="deleteUser(user)">X</button>
+							</td>
+						</tr>
+						<tr>
+							<td v-if="!edit">...</td>
+							<td v-else> {{ user_edit_id }} </td>
+							<td> <input v-model="user_name"></input>
+							</td>
+							<td> <input v-model="user_fav_city"> </input>
+							</td>
+							<td v-if="!edit"><button class="btn btn-xs btn-success" v-on:click="addUser()">Add</button></td>
+							<td v-if="edit"><button class="btn btn-xs btn-warning" v-on:click="editUser()">Edit</button></td>
+						</tr>
+				</table>
+				<button class="btn btn-xs btn-danger" v-on:click="deleteAllUsers()">Delete All</button>
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+var app = new Vue({
+	el: '#app',
+	data: {
+		users: {},				//	GET will populate users
+		user_name: '',			//	Input for POST / PUT name
+		user_fav_city: '',	//	Input for POST / PUT favoriteCity
+		edit: false,				//	false: Input is for new user / True: Input for edit user
+		user_edit_id: 0			//	id for current user (during edit)
+	} ,
+
+	//	Think of 'mounted' as a constructor
+	mounted: function() {
+		this.getUsers();
+	} ,
+
+	methods: {
+
+		//	GET req from API and populate users
+		getUsers: function() {
+			var url = '/people';
+			axios.get(url).then(res => {
+				this.users = res.data;
+			});
+		} ,
+
+		//	POST name and city from user input
+		addUser: function() {
+			var self = this;
+			var url = '/people';
+			axios.post(url , {
+					name: this.user_name,
+					favoriteCity: this.user_fav_city
+				})
+				.then(function(res) {
+					self.resetTable();
+				})
+				.catch(function(err) {
+					console.log(err);
+				});
+		} ,
+
+		//	INIT for editing new user
+		setEditUser: function(user) {
+			//	IF edit is false
+			if (!this.edit) {
+				this.edit = true;
+				this.user_edit_id = user._id;
+				//this.getUsers();
+			} else {
+				//	Edit is true and id == edit.id
+				if (user._id === this.user_edit_id) {
+					this.edit = false;
+					this.user_edit_id = 0;
+					//this.getUsers();
+				}
+				//	Edit is true but id != edit.id
+				else {
+					this.edit = true;
+					this.user_edit_id = user._id;
+					//this.getUsers();
+				}
+			}
+		} ,
+
+		//	PUT req for name and city
+		editUser: function() {
+			var self = this;
+			//	Test if edit is true
+			if (self.edit === true) {
+				var id = this.user_edit_id;
+				var url = '/people/' + id;
+				axios.put(url, {
+						name: self.user_name,
+						favoriteCity: self.user_fav_city
+					})
+					.then(function(res) {
+						self.resetTable();
+					})
+					.catch(function(err) {
+						console.log(err);
+					});
+			}
+		} ,
+
+		//	Delete User
+		deleteUser: function(user) {
+			var self = this;
+			var url = '/people/' + user._id;
+			axios.delete(url)
+				.then(function(res) {
+					self.resetTable();
+				})
+				.catch(function(err) {
+					console.log(err);
+				});
+		} ,
+
+		//	Function for resetting the table
+		//	Maybe each row should be a component and
+		//	can refresh by row instead of table
+		resetTable: function() {
+			var self = this;
+			self.getUsers();
+			self.user_name = '';
+			self.user_fav_city = '';
+			self.edit = false;
+			this.user_edit_id = 0;
+		} ,
+
+		//	Delete all users
+		deleteAllUsers: function() {
+			var self = this;
+			var url = '/people';
+			axios.delete(url)
+				.then(function(res) {
+					self.resetTable();
+				})
+				.catch(function(err) {
+					console.log(err);
+				})
+		}
+	}
+})
+</script>
+
+</html>

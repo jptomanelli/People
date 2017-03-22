@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<meta charset="UTF-8">
+<meta charset="UTF-8">
 	<title>People</title>
 	<link rel="stylesheet" href="javascripts/bootstrap/dist/css/bootstrap.min.css">
 	<script type="text/javascript" src="javascripts/jquery/dist/jquery.min.js"></script>
@@ -47,11 +47,12 @@
 							<td v-if="!edit"><button class="btn btn-xs btn-success" v-on:click="addUser()">Add</button></td>
 							<td v-if="edit"><button class="btn btn-xs btn-warning" v-on:click="editUser()">Edit</button></td>
 						</tr>
-				</table>
-				<button class="btn btn-xs btn-danger" v-on:click="deleteAllUsers()">Delete All</button>
-			</div>
+				</tbody>
+			</table>
+			<button class="btn btn-xs btn-danger" v-on:click="deleteAllUsers()">Delete All</button>
 		</div>
 	</div>
+</div>
 </body>
 <script type="text/javascript">
 var app = new Vue({
